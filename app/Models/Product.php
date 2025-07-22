@@ -22,7 +22,8 @@ class Product extends Model
         'description',
         'price',
         'stock',
+        'deleted_at'
     ];
 
-    protected $dates = ['deleted_at'];
+    // protected $dates = ['deleted_at'];
 }

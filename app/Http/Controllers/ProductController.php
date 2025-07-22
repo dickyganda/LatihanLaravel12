@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ProductController extends Controller
@@ -29,7 +30,10 @@ class ProductController extends Controller
         //get all products
         // $products = Product::whereNull('deleted_at');
 
-        $products = Product::latest()->paginate(10);
+        // $products = Product::latest()->paginate(10);
+        $products = DB::table('products')
+        ->whereNull('deleted_at')
+        ->get();
 
         //render view with products
         return view ('products.index', compact('products'));
@@ -161,20 +165,27 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        //get product by ID
         $product = Product::findOrFail($id);
+        $product->update([
+            'deleted_at'     => Carbon::now(),
+        ]);
+
+        return response()->json(array('status' => 'success', 'reason' => 'Sukses Delete Data'));
+
+        //get product by ID
+        // $product = Product::findOrFail($id);
 
         //delete image
-        Storage::delete('products/'. $product->image);
+        // Storage::delete('products/'. $product->image);
 
         //delete product
-        $product->delete();
+        // $product->delete();
 
         // $post = Product::find($id);  
         // $post->delete(); // This sets the deleted_at column, instead of removing the record
 
         //redirect to index
         // return redirect('/product/index')->with(['success' => 'Data Berhasil Dihapus!']);
-        return redirect()->route('products.index')->with(['success' => 'Data Berhasil Dihapus!']);
+        // return redirect()->route('products.index')->with(['success' => 'Data Berhasil Dihapus!']);
     }
 }

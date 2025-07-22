@@ -40,13 +40,14 @@
                                         <td>{{ "Rp " . number_format($product->price,2,',','.') }}</td>
                                         <td>{{ $product->stock }}</td>
                                         <td class="text-center">
-                                            <form onsubmit="return confirm('Apakah Anda Yakin ?');" action="{{ route('products.destroy', $product->id) }}" method="POST">
+                                            {{-- <form onsubmit="return confirm('Apakah Anda Yakin ?');" action="{{ route('products.destroy', $product->id) }}" method="POST"> --}}
                                                 <a href="/products/detail/{{$product->id}}" class="btn btn-sm btn-dark">SHOW</a>
                                                 <a href="/products/edit/{{$product->id}}" class="btn btn-sm btn-primary">EDIT</a>
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">HAPUS</button>
-                                            </form>
+                                                <button type="button" data-id="{{ $product->id }}" class="delete-products btn btn-danger btn-sm">HAPUS</button>
+                                                {{-- @csrf --}}
+                                                {{-- @method('DELETE') --}}
+                                                {{-- <button type="submit" class="btn btn-sm btn-danger">HAPUS</button> --}}
+                                            {{-- </form> --}}
                                         </td>
                                     </tr>
                                 @empty
@@ -56,17 +57,59 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        {{ $products->links() }}
+                        {{-- {{ $products->links() }} --}}
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+$(".delete-products").on("click", function(){
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteProducts($(this).data('id'));
+            }
+        });
+    })
+
+    function deleteProducts(id) {
+        var formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('_token', '{{ csrf_token() }}')
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: '/products/destroy/' + id,
+            data: formData,
+            contentType: false,
+            cache: false,
+            processData: false,
+            success: function (data) {
+                
+                Swal.fire({
+                    title: "Deleted!",
+                    text: "Your file has been deleted.",
+                    icon: "success"
+                }).then(() => {
+                    location.replace("/products/index");
+                });
+
+            }
+        });
+    }
+
         //message with sweetalert
         @if(session('success'))
             Swal.fire({
@@ -85,6 +128,7 @@
                 timer: 2000
             });
         @endif
+
 
     </script>
 
